@@ -21,6 +21,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
@@ -123,13 +124,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 GenericTypeIndicator<HashMap<String,HashMap<String,Object>>> t = new GenericTypeIndicator<HashMap<String,HashMap<String,Object>>>() {};
                 HashMap<String,HashMap<String,Object>> location = dataSnapshot.getValue(t);
                 for(Object i : location.keySet()){
-                    if(!location.get(i).toString().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())){
+                    if(!i.toString().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())){
                         Double lat = Double.parseDouble(location.get(i).get("latitude").toString());
                         Double lng = Double.parseDouble(location.get(i).get("longitude").toString());
                         LatLng current = new LatLng(lat, lng);
                         mMap.addMarker(new MarkerOptions()
                                 .position(current)
+                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
                                 .title(i.toString()));
+
                     }
                 }
             }
