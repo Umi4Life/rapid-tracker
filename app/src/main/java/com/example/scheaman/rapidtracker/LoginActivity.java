@@ -94,7 +94,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
         mAuth = FirebaseAuth.getInstance();
-        mAuth.signOut();
     }
 
 
@@ -122,6 +121,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      * errors are presented and no actual login attempt is made.
      */
     private void attemptLogin() {
+        mAuth.signOut();
 
         // Reset errors.
         mEmailView.setError(null);
@@ -159,6 +159,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         } else {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
+            showProgress(true);
             System.out.println("User: "+mAuth.getCurrentUser());
             mAuth.signInWithEmailAndPassword(mEmailView.getText().toString(), mPasswordView.getText().toString())
                     .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
@@ -175,6 +176,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                                                     // Sign in success, update UI with the signed-in user's information
                                                     redirect();
                                                 } else {
+                                                    showProgress(false);
                                                     mPasswordView.setError(getString(R.string.error_incorrect_password));
                                                     mPasswordView.requestFocus();
                                                 }
@@ -197,7 +199,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
     private void redirect(){
                 // Transition to the map activity
-                showProgress(true);
                 Intent intent=new Intent(LoginActivity.this, MapsActivity.class);
                 startActivity(intent);
                 finish();

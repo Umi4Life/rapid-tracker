@@ -33,6 +33,7 @@ import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -85,8 +86,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        final String path = "location" + "/" + "123";
+        final String path = "location" + "/" + FirebaseAuth.getInstance().getCurrentUser().getUid();
+        final String users = "location/";
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference(path);
+        DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference(users);
         ref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -97,9 +100,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Log.d("Retrieved", "Value is: " + location);
 
                 // Add a marker and move the camera
-                Double lat = (Double)location.get("latitude");
-                Double lng = (Double)location.get("longitude");
+                double lat = Double.parseDouble(location.get("latitude").toString());
+                double lng = Double.parseDouble(location.get("longitude").toString());
                 LatLng current = new LatLng(lat, lng);
+
+
 
                 mMap.clear();
                 mMap.addMarker(new MarkerOptions().position(current).title("ME"));
@@ -111,12 +116,35 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 // Ignore
             }
         });
+
+        usersRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                GenericTypeIndicator<HashMap<String,HashMap<String,Object>>> t = new GenericTypeIndicator<HashMap<String,HashMap<String,Object>>>() {};
+                HashMap<String,HashMap<String,Object>> location = dataSnapshot.getValue(t);
+                for(Object i : location.keySet()){
+                    if(!location.get(i).toString().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())){
+                        Double lat = Double.parseDouble(location.get(i).get("latitude").toString());
+                        Double lng = Double.parseDouble(location.get(i).get("longitude").toString());
+                        LatLng current = new LatLng(lat, lng);
+                        mMap.addMarker(new MarkerOptions()
+                                .position(current)
+                                .title(i.toString()));
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                //Ignore
+            }
+        });
     }
 
 
 
     private void requestLocationUpdates() {
-        final String path = "location" + "/" + "123";
+        final String path = "location" + "/" + FirebaseAuth.getInstance().getCurrentUser().getUid();
         int permission = ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION);
         if (permission == PackageManager.PERMISSION_GRANTED) {
